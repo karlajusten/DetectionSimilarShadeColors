@@ -59,7 +59,7 @@ public class Main {
 	private static void compareShades(List<Color> shade1, List<Color> shade2, Sheet sheet){
 		int row = 1;
 	    for (int i = 0; i<shade1.size(); i++) {
-	        for(int j=i; j<shade2.size(); j++){
+	        for(int j=0; j<shade2.size(); j++){
 	        	Row newRow = sheet.createRow(row);
 		        newRow.createCell(0).setCellValue(Integer.toHexString(shade1.get(i).getRed()));
 		        newRow.createCell(1).setCellValue(Integer.toHexString(shade1.get(i).getGreen()));
