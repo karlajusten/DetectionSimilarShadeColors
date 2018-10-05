@@ -40,7 +40,10 @@ public class Main {
 			    titleRow.createCell(8).setCellValue("H Variance (HSL)");
 			    titleRow.createCell(9).setCellValue("HSL - SL equals");
 			    titleRow.createCell(10).setCellValue("H Variance (HCL)");
-			    
+			    titleRow.createCell(11).setCellValue("DeltaE LAB 94");
+			    titleRow.createCell(12).setCellValue("L Variance (LAB 94)");
+			    titleRow.createCell(13).setCellValue("DeltaE LAB 76");
+			    titleRow.createCell(14).setCellValue("H Variance (HSV)");
 			    compareShades(shades.get(s), shades.get(z), sheet);
 	    	}
 	    }
@@ -72,6 +75,11 @@ public class Main {
 		        newRow.createCell(8).setCellValue(calculateHVarianceHSL(shade1.get(i), shade2.get(j)));
 		        newRow.createCell(9).setCellValue(myIdeaHSL(shade1.get(i), shade2.get(j)));
 		        newRow.createCell(10).setCellValue(calculateHVarianceHCL(shade1.get(i), shade2.get(j)));
+		        newRow.createCell(11).setCellValue(deltaE_LAB_94(shade1.get(i), shade2.get(j)));
+		        newRow.createCell(12).setCellValue(calculateLVarianceLAB94(shade1.get(i), shade2.get(j)));
+		        newRow.createCell(13).setCellValue(deltaE_LAB_76(shade1.get(i), shade2.get(j)));
+		        newRow.createCell(14).setCellValue(calculateHVarianceHSV(shade1.get(i), shade2.get(j)));
+		        
 		        row++;
 	       }
 	        
@@ -163,5 +171,53 @@ public class Main {
 		HCL hcl1 = new HCL(color);
 		HCL hcl2 = new HCL(color2);
 		return hcl1.getH()-hcl2.getH();
+	}
+	
+	/*
+	 * Totally based on: https://github.com/antimatter15/rgb-lab/blob/master/color.js
+	 */
+	// calculate the perceptual distance between colors in CIELAB
+	// https://github.com/THEjoezack/ColorMine/blob/master/ColorMine/ColorSpaces/Comparisons/Cie94Comparison.cs
+	private static double deltaE_LAB_94(Color a, Color b){
+	  LAB labA = new LAB(a);
+	  LAB labB = new LAB(b);
+		
+	  double deltaL = labA.getL() - labB.getL();
+	  double deltaA = labA.getA() - labB.getA();
+	  double deltaB = labA.getB() - labB.getB();
+	  double c1 = Math.sqrt(labA.getA() * labA.getA() + labA.getB() * labA.getB());
+	  double c2 = Math.sqrt(labB.getA() * labB.getA() + labB.getB() * labB.getB());
+	  double deltaC = c1 - c2;
+	  double deltaH = deltaA * deltaA + deltaB * deltaB - deltaC * deltaC;
+	  deltaH = deltaH < 0 ? 0 : Math.sqrt(deltaH);
+	  double sc = 1.0 + 0.045 * c1;
+	  double sh = 1.0 + 0.015 * c1;
+	  double deltaLKlsl = deltaL / (1.0);
+	  double deltaCkcsc = deltaC / (sc);
+	  double deltaHkhsh = deltaH / (sh);
+	  double i = deltaLKlsl * deltaLKlsl + deltaCkcsc * deltaCkcsc + deltaHkhsh * deltaHkhsh;
+	  return i < 0 ? 0 : Math.sqrt(i);
+	}
+	
+	private static double calculateLVarianceLAB94(Color a, Color b) {
+		LAB labA = new LAB(a);
+		LAB labB = new LAB(b);
+		return labA.getL() - labB.getL();
+	}
+	
+	private static double deltaE_LAB_76(Color a, Color b){
+	  LAB labA = new LAB(a);
+	  LAB labB = new LAB(b);
+		
+	  double deltaL = labA.getL() - labB.getL();
+	  double deltaA = labA.getA() - labB.getA();
+	  double deltaB = labA.getB() - labB.getB();
+	  return Math.sqrt(deltaL*deltaL + deltaA*deltaA + deltaB*deltaB);
+	}
+	
+	private static double calculateHVarianceHSV(Color a, Color b) {
+		HSV hsvA = new HSV(a);
+		HSV hsvB = new HSV(b);
+		return hsvA.getH() - hsvB.getH();
 	}
 }
